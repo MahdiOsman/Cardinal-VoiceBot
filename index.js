@@ -1,6 +1,6 @@
 // Import necessary libraries
 const { Client, GatewayIntentBits } = require("discord.js");
-const { joinVoiceChannel, getVoiceConnection, EndBehaviorType } = require("@discordjs/voice");
+const { joinVoiceChannel, getVoiceConnection, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require("@discordjs/voice");
 const { token, XI_API_KEY, AZURE_SPEECH_KEY, AZURE_REGION } = require("./config.json");
 const prism = require("prism-media");
 const fs = require("fs");
@@ -95,7 +95,7 @@ client.on("messageCreate", async (message) => {
 function startRecording(userId, receiver) {
     const audioStream = receiver.subscribe(userId, {
         end: {
-            behavior: EndBehaviorType.Manual,
+            behavior: "silence",
         },
     });
 
@@ -210,6 +210,7 @@ async function getEventTypeFromSpeech(inputVal) {
         // Check if the first word matches the activation word
         if (inputValInitial[0] === activateSystemWord.toLowerCase()) {
             const command = inputValInitial[1];
+            const argument = inputValInitial.slice(2).join(" "); // Join the remaining parts as the argument
 
             switch (command) {
                 case "leave":
@@ -219,7 +220,7 @@ async function getEventTypeFromSpeech(inputVal) {
                     await handleLeaveCommand();
                     break;
                 case "play":
-                    await handlePlayCommand();
+                    await handlePlayCommand(argument);
                     break;
                 case "skip":
                 case "next":
@@ -251,22 +252,71 @@ async function handleLeaveCommand() {
     }
 }
 
-async function handlePlayCommand() {
-    console.log("Playing Music!");
+async function handlePlayCommand(audioFile) {
+    if (!audioFile) {
+        console.log("No audio file specified.");
+        await msgGlobal.reply("Please specify an audio file to play.");
+        return;
+    }
+
+    const filePath = path.join(__dirname, 'recordings', `${audioFile}.wav`);
+    if (!fs.existsSync(filePath)) {
+        console.log(`File ${audioFile} does not exist.`);
+        await msgGlobal.reply(`The file ${audioFile} does not exist.`);
+        return;
+    }
+
+    const { channel } = msgGlobal.member.voice;
+    if (!channel) {
+        console.log("User is not in a voice channel.");
+        await msgGlobal.reply("You need to be in a voice channel to play audio.");
+        return;
+    }
+
+    try {
+        const connection = getVoiceConnection(channel.guild.id) || joinVoiceChannel({
+            channelId: channel.id,
+            guildId: channel.guild.id,
+            adapterCreator: channel.guild.voiceAdapterCreator,
+            selfDeaf: false,
+        });
+
+        const player = createAudioPlayer();
+        const resource = createAudioResource(filePath);
+
+        player.play(resource);
+        connection.subscribe(player);
+
+        player.on(AudioPlayerStatus.Idle, () => {
+            console.log('Audio finished playing');
+            player.stop();
+        });
+
+        player.on('error', error => {
+            console.error(`Error playing audio: ${error.message}`);
+        });
+
+        await msgGlobal.reply(`Playing ${audioFile}`);
+    } catch (error) {
+        console.error(`Error playing audio: ${error.message}`);
+        await msgGlobal.reply(`There was an error trying to play ${audioFile}.`);
+    }
 }
 
 async function handleSkipCommand() {
     console.log("Skipped Music!");
+    // Add your skip music logic here
 }
 
 async function handlePauseCommand() {
     console.log("Paused Music!");
+    // Add your pause music logic here
 }
 
 async function handleMuteCommand() {
     console.log("Music Stopped!");
+    // Add your mute music logic here
 }
-
 
 const userStreams = {};
 
