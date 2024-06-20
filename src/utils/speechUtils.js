@@ -25,7 +25,7 @@ function recognizeSpeech(userId, callback) {
                     break;
                 case sdk.ResultReason.NoMatch:
                     console.log("NOMATCH: Speech could not be recognized.");
-                    callback(new Error("Speech could not be recognized."), null);
+                    //callback(new Error("Speech could not be recognized."), null);
                     break;
                 case sdk.ResultReason.Canceled:
                     const cancellation = sdk.CancellationDetails.fromResult(result);
@@ -34,7 +34,7 @@ function recognizeSpeech(userId, callback) {
                         console.error(`CANCELED: ErrorCode=${cancellation.errorCode}`);
                         console.error(`CANCELED: ErrorDetails=${cancellation.errorDetails}`);
                     }
-                    callback(new Error("Recognition canceled."), null);
+                    //callback(new Error("Recognition canceled."), null);
                     break;
             }
             recognizer.close();

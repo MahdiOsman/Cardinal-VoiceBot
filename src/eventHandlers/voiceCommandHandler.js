@@ -1,4 +1,4 @@
-const { handleLeaveCommand, handlePlayCommand, handlePauseCommand, handleUnpauseCommand, handleMuteCommand } = require("../commands");
+const { handleSkipCommand, handleLeaveCommand, handlePlayCommand, handlePauseCommand, handleUnpauseCommand, handleMuteCommand } = require("../commands");
 
 module.exports = (command, message) => {
     // Clean up the message (remove caps/extra spaces/special characters)
@@ -30,7 +30,5 @@ module.exports = (command, message) => {
             console.log("Mute command recognized");
             handleMuteCommand(message);
             break;
-        default:
-            message.reply(`Unrecognized command: ${command}`);
     }
 };

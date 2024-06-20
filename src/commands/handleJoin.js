@@ -21,13 +21,13 @@ module.exports = async (message) => {
         });
 
         connection.receiver.speaking.on("start", (userId) => {
-            console.log(`Started recording for user ${userId}`);
+            //console.log(`Started recording for user ${userId}`);
             startRecording(userId, connection.receiver);
         });
 
         connection.receiver.speaking.on("end", (userId) => {
             stopRecording(userId);
-            console.log(`Stopped recording for user ${userId}`);
+            //console.log(`Stopped recording for user ${userId}`);
 
             recognizeSpeech(userId, (err, result) => {
                 if (err) {
@@ -40,7 +40,7 @@ module.exports = async (message) => {
                 // Check if the recognized text starts with "cardinal"
                 if (recognizedText.startsWith("cardinal")) {
                     const command = recognizedText.replace("cardinal", "").trim();
-                    handleVoiceCommand(command, { reply: console.log });
+                    handleVoiceCommand(command, message);
                 }
             });
         });
