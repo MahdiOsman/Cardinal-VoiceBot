@@ -138,3 +138,6 @@ recordings/
 # test files
 test/
 testing/
+
+# logs
+logs/
