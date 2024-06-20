@@ -25,9 +25,7 @@ async function playAudioFromYouTube(message, prompt) {
     // Validate if the user is in a voice channel
     const memberVoiceChannel = message.member.voice.channel;
     if (!memberVoiceChannel) {
-      await message.reply(
-        "You need to be in a voice channel to use this command."
-      );
+      await message.reply("You need to be in a voice channel to use this command.");
       return;
     }
 
@@ -46,31 +44,57 @@ async function playAudioFromYouTube(message, prompt) {
       return;
     }
 
-    // Create an audio stream from YouTube URL
-    const stream = ytdl(url, { filter: "audioonly" });
+    let startTime = 0; // Start time for the stream in seconds
 
-    // Get the audio player from the connection state
-    const player = createAudioPlayer();
-    // Create an audio resource
-    const resource = createAudioResource(stream);
+    // Function to play audio stream from YouTube URL
+    const playStream = (url, startTime) => {
+      const stream = ytdl(url, { filter: "audioonly", highWaterMark: 1 << 25, begin: `${startTime}s` });
+      const resource = createAudioResource(stream);
+      const player = createAudioPlayer();
+      player.play(resource);
 
-    // Subscribe to the connection and play the audio resource
-    player.play(resource);
-    connection.subscribe(player);
+      connection.subscribe(player);
 
-    // Event listeners for player events
-    player.on(AudioPlayerStatus.Idle, () => {
-      console.log("Audio finished playing");
-      player.stop();
-    });
+      player.on(AudioPlayerStatus.Idle, () => {
+        console.log("Audio finished playing");
+        player.stop();
+      });
 
-    player.on("error", (error) => {
-      console.error(`Error playing audio: ${error.message}`);
-    });
+      player.on("error", (error) => {
+        console.error(`Error playing audio: ${error.message}`);
+        stream.destroy();
+        startTime += Math.floor(player.playbackDuration / 1000); // Update startTime to the current playback position
+        message.reply("There was an error trying to play music. Retrying...");
+        playStream(url, startTime); // Retry playing the stream from the last known position
+      });
+
+      setInterval(() => {
+        startTime += Math.floor(player.playbackDuration / 1000);
+      }, 1000);
+    };
+
+    // Start playing the stream
+    playStream(url, startTime);
   } catch (error) {
     console.error(`Error playing audio: ${error.message}`);
     await message.reply("There was an error trying to play music.");
   }
+}
+
+// Pause audio
+async function pauseAudio(message) {
+  const connection = getVoiceConnection(message.guild.id);
+  if (!connection) {
+    return message.reply("There is no audio currently playing.");
+  }
+
+  const player = connection.state.subscription.player;
+  if (player.state.status === AudioPlayerStatus.Playing) {
+    player.pause();
+    return message.reply("Audio paused.");
+  }
+
+  return message.reply("Audio is already paused.");
 }
 
 // Pause audio
