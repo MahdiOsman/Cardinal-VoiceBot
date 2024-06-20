@@ -131,7 +131,6 @@ dist
 
 # congfig files
 config/
-config.json
 
 # recording files
 recordings/
