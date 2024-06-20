@@ -2,14 +2,14 @@ const {
   handleJoinCommand,
   handleSkipCommand,
   handleLeaveCommand,
-  handlePlayYoutubeCommand,
+  handleYoutubeAudioCommand,
   handlePauseCommand,
   handleUnpauseCommand,
   handleMuteCommand,
   handleSearchCommand,
 } = require("../commands");
 
-module.exports = (command, message) => {
+module.exports = (command, message, prompt) => {
   const commandHandlers = {
     // Handle Join Commands
     join: handleJoinCommand,
@@ -25,7 +25,8 @@ module.exports = (command, message) => {
     next: handleSkipCommand,
     pause: handlePauseCommand,
     unpause: handleUnpauseCommand,
-    play: handlePlayYoutubeCommand,
+    play: handleYoutubeAudioCommand,
+    played: handleYoutubeAudioCommand,
     mute: handleMuteCommand,
     stop: handleMuteCommand,
 
@@ -36,11 +37,11 @@ module.exports = (command, message) => {
   // Clean up the message (remove caps/extra spaces/special characters)
 
   command = command.toLowerCase().replace(/[^a-z0-9 ]/g, "");
-  console.log("Test " + command + ".");
+  console.log(prompt);
   // If the command is recognized, call the appropriate handler
   const handler = commandHandlers[command];
   if (handler) {
-    handler(message);
+    handler(message, prompt);
   } else {
     console.error(`Command ${command} unknown.`);
   }

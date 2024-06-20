@@ -43,7 +43,8 @@ module.exports = async (message) => {
         // Check if the recognized text starts with "cardinal"
         if (recognizedText.startsWith("cardinal")) {
           const command = recognizedText.split(" ")[1];
-          handleVoiceCommand(command, message);
+          const prompt = recognizedText.split(" ").slice(2).join(" ");
+          handleVoiceCommand(command, message, prompt);
         }
       });
     });

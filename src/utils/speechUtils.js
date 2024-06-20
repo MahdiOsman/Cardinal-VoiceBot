@@ -9,7 +9,7 @@ const speechConfig = sdk.SpeechConfig.fromSubscription(
 speechConfig.speechRecognitionLanguage = "en-US";
 
 function recognizeSpeech(userId, callback) {
-  const filename = `../recordings/${userId}.wav`;
+  const filename = `./recordings/${userId}.wav`;
   fs.readFile(filename, (err, data) => {
     if (err) {
       console.error("Error reading file:", err);

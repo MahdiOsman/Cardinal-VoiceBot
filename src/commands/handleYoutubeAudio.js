@@ -7,37 +7,70 @@ const {
 const ytdl = require("ytdl-core");
 const ytSearch = require("yt-search");
 
-module.exports = async (message) => {
-  console.log("This is youtube audio player.");
-  const prompt = message.content.split(" ").slice(2).join(" ");
-  const searchResult = ytSearch(prompt);
-  const video = searchResult.videos.length > 0 ? searchResult.videos[0] : null;
+module.exports = async (message, prompt) => {
+  console.log(prompt);
+  try {
+    // Search for videos based on the prompt
+    const searchResult = await ytSearch(prompt);
 
-  if (!video) {
-    message.reply("No video found for the query.");
-    return;
-  }
+    // Check if any videos were found
+    if (!searchResult || searchResult.videos.length === 0) {
+      await message.reply("No video found for the query.");
+      return;
+    }
 
-  const url = video.url;
-  const stream = ytdl(url, { filter: "audioonly" });
+    // Get the first video from the search results
+    const video = searchResult.videos[0];
+    const url = video.url;
 
-  const connection = getVoiceConnection(message.guild.id);
-  if (!connection) {
-    return await message.reply("I am not connected to a voice channel.");
-  }
+    // Validate if the user is in a voice channel
+    const memberVoiceChannel = message.member.voice.channel;
+    if (!memberVoiceChannel) {
+      await message.reply(
+        "You need to be in a voice channel to use this command."
+      );
+      return;
+    }
 
-  const player = connection.state.audioPlayer;
+    // Join the voice channel
+    const connection =
+      getVoiceConnection(memberVoiceChannel.guild.id) ||
+      joinVoiceChannel({
+        channelId: memberVoiceChannel.id,
+        guildId: memberVoiceChannel.guild.id,
+        adapterCreator: memberVoiceChannel.guild.voiceAdapterCreator,
+      });
 
-  const resource = createAudioResource(stream);
-  connection.subscribe(player);
-  player.play(resource);
+    // Check if connection is not available
+    if (!connection) {
+      await message.reply("Failed to join the voice channel.");
+      return;
+    }
 
-  player.on(AudioPlayerStatus.Idle, () => {
-    console.log("Audio finished playing");
-    player.stop();
-  });
+    // Create an audio stream from YouTube URL
+    const stream = ytdl(url, { filter: "audioonly" });
 
-  player.on("error", (error) => {
+    // Create an audio resource
+    const resource = createAudioResource(stream);
+
+    // Get the audio player from the connection state
+    const player = connection.state.audioPlayer;
+
+    // Subscribe to the connection and play the audio resource
+    connection.subscribe(player);
+    player.play(resource);
+
+    // Event listeners for player events
+    player.on(AudioPlayerStatus.Idle, () => {
+      console.log("Audio finished playing");
+      player.stop();
+    });
+
+    player.on("error", (error) => {
+      console.error(`Error playing audio: ${error.message}`);
+    });
+  } catch (error) {
     console.error(`Error playing audio: ${error.message}`);
-  });
+    await message.reply("There was an error trying to play music.");
+  }
 };
