@@ -5,7 +5,8 @@ const prism = require("prism-media");
 
 const userStreams = {};
 
-function startRecording(userId, receiver) {
+function startRecording(userId, receiver, onStopCallback) {
+    console.log(`Started recording for user ${userId}`);
     const audioStream = receiver.subscribe(userId, {
         end: {
             behavior: "silence",
@@ -33,19 +34,20 @@ function startRecording(userId, receiver) {
 
     audioStream.on("end", () => {
         writer.end();
+        if (onStopCallback) onStopCallback();
     });
 
     userStreams[userId] = { audioStream, fileStream, writer };
 }
 
 function stopRecording(userId) {
+    console.log(`Stopped recording for user ${userId}`);
     const streams = userStreams[userId];
     if (streams) {
         streams.audioStream.destroy();
         streams.writer.end();
         delete userStreams[userId];
     }
-    // Further processing can go here...
 }
 
 module.exports = {

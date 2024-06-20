@@ -1,3 +1,6 @@
+/**
+ * Play an audio file in the voice channel the user is in.
+ */
 const { getVoiceConnection, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require("@discordjs/voice");
 const fs = require("fs");
 const path = require("path");

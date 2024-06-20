@@ -1,3 +1,6 @@
+/**
+ * Mute the audio stream.
+ */
 const { getVoiceConnection, AudioPlayerStatus } = require("@discordjs/voice");
 
 module.exports = async (message) => {

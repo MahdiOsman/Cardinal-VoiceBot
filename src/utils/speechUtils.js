@@ -10,6 +10,7 @@ function recognizeSpeech(userId, callback) {
     fs.readFile(filename, (err, data) => {
         if (err) {
             console.error("Error reading file:", err);
+            callback(err, null);
             return;
         }
 
@@ -17,12 +18,28 @@ function recognizeSpeech(userId, callback) {
         const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
 
         recognizer.recognizeOnceAsync((result) => {
-            callback(result);
+            switch (result.reason) {
+                case sdk.ResultReason.RecognizedSpeech:
+                    console.log(`RECOGNIZED: ${result.text}`);
+                    callback(null, result.text);
+                    break;
+                case sdk.ResultReason.NoMatch:
+                    console.log("NOMATCH: Speech could not be recognized.");
+                    callback(new Error("Speech could not be recognized."), null);
+                    break;
+                case sdk.ResultReason.Canceled:
+                    const cancellation = sdk.CancellationDetails.fromResult(result);
+                    console.log(`CANCELED: Reason=${cancellation.reason}`);
+                    if (cancellation.reason === sdk.CancellationReason.Error) {
+                        console.error(`CANCELED: ErrorCode=${cancellation.errorCode}`);
+                        console.error(`CANCELED: ErrorDetails=${cancellation.errorDetails}`);
+                    }
+                    callback(new Error("Recognition canceled."), null);
+                    break;
+            }
             recognizer.close();
         });
     });
 }
 
-module.exports = {
-    recognizeSpeech,
-};
+module.exports = recognizeSpeech;

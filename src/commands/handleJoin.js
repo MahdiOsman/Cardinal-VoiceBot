@@ -1,5 +1,10 @@
+/**
+ * Join a voice channel and start recording audio.
+ */
 const { joinVoiceChannel } = require("@discordjs/voice");
 const { startRecording, stopRecording } = require("../utils/audioUtils");
+const recognizeSpeech = require("../utils/speechUtils");
+const handleVoiceCommand = require("../eventHandlers/voiceCommandHandler");
 
 module.exports = async (message) => {
     const { channel } = message.member.voice;
@@ -16,11 +21,28 @@ module.exports = async (message) => {
         });
 
         connection.receiver.speaking.on("start", (userId) => {
+            console.log(`Started recording for user ${userId}`);
             startRecording(userId, connection.receiver);
         });
 
         connection.receiver.speaking.on("end", (userId) => {
             stopRecording(userId);
+            console.log(`Stopped recording for user ${userId}`);
+
+            recognizeSpeech(userId, (err, result) => {
+                if (err) {
+                    console.error("Error recognizing speech:", err);
+                    return;
+                }
+
+                const recognizedText = result.toLowerCase();
+                console.log(`Recognized text: ${recognizedText}`);
+                // Check if the recognized text starts with "cardinal"
+                if (recognizedText.startsWith("cardinal")) {
+                    const command = recognizedText.replace("cardinal", "").trim();
+                    handleVoiceCommand(command, { reply: console.log });
+                }
+            });
         });
 
         await message.reply(`Joined ${channel.name}!`);

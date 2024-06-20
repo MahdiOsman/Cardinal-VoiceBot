@@ -135,3 +135,6 @@ config/
 # recording files
 recordings/
 
+# test files
+test/
+testing/

@@ -1,3 +1,6 @@
+/**
+ * Leave the voice channel.
+ */
 const { joinVoiceChannel } = require("@discordjs/voice");
 const { startRecording, stopRecording } = require("../utils/audioUtils");
 

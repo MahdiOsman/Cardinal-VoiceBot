@@ -1,3 +1,6 @@
+/**
+ * Pause the current audio stream
+ */
 const { getVoiceConnection, AudioPlayerStatus } = require("@discordjs/voice");
 
 module.exports = async (message) => {

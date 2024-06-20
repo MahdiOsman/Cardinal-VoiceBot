@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 const { token } = require("../config/config.json");
 const handleMessageCreate = require("./eventHandlers/messageCreateHandler");
+const { handleLeaveCommand, handlePlayCommand, handlePauseCommand, handleUnpauseCommand, handleMuteCommand } = require("./commands");
 
 const client = new Client({
     intents: [
