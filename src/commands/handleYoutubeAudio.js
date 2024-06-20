@@ -3,6 +3,7 @@ const {
   getVoiceConnection,
   createAudioResource,
   AudioPlayerStatus,
+  createAudioPlayer,
 } = require("@discordjs/voice");
 const ytdl = require("ytdl-core");
 const ytSearch = require("yt-search");
@@ -22,6 +23,7 @@ module.exports = async (message, prompt) => {
     // Get the first video from the search results
     const video = searchResult.videos[0];
     const url = video.url;
+    console.log(`Playing video: ${video.title} (${url})`);
 
     // Validate if the user is in a voice channel
     const memberVoiceChannel = message.member.voice.channel;
@@ -50,15 +52,14 @@ module.exports = async (message, prompt) => {
     // Create an audio stream from YouTube URL
     const stream = ytdl(url, { filter: "audioonly" });
 
+    // Get the audio player from the connection state
+    const player = createAudioPlayer();
     // Create an audio resource
     const resource = createAudioResource(stream);
 
-    // Get the audio player from the connection state
-    const player = connection.state.audioPlayer;
-
     // Subscribe to the connection and play the audio resource
-    connection.subscribe(player);
     player.play(resource);
+    connection.subscribe(player);
 
     // Event listeners for player events
     player.on(AudioPlayerStatus.Idle, () => {
