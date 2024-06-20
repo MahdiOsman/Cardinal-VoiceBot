@@ -25,7 +25,6 @@ module.exports = (command, message, prompt) => {
         pause: pauseAudio,
         unpause: unpauseAudio,
         play: playAudioFromYouTube,
-        played: playAudioFromYouTube,
         mute: handleMuteCommand,
         stop: handleMuteCommand,
 

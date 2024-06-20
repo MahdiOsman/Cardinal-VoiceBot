@@ -8,6 +8,32 @@ const speechConfig = sdk.SpeechConfig.fromSubscription(
 );
 speechConfig.speechRecognitionLanguage = "en-US";
 
+function log(text) {
+  const folder = "./logs";
+  if (!fs.existsSync(folder)) {
+    fs.mkdirSync(folder);
+  }
+
+  const filename = `${folder}/speech.log`;
+  
+  // Create file if it doesn't exist
+  if (!fs.existsSync(filename)) {
+    fs.writeFileSync(filename, "", (err) => {
+      if (err) {
+        console.error("Error creating log file:", err);
+      }
+    });
+  }
+
+  // Append to file
+  fs.appendFile(filename, `${new Date().toISOString()} - ${text}\n`, (err) => {
+    if (err) {
+      console.error("Error writing to log file:", err);
+    }
+  });
+}
+
+
 function recognizeSpeech(userId, callback) {
   const filename = `./recordings/${userId}.wav`;
   fs.readFile(filename, (err, data) => {
@@ -24,6 +50,9 @@ function recognizeSpeech(userId, callback) {
       switch (result.reason) {
         case sdk.ResultReason.RecognizedSpeech:
           console.log(`RECOGNIZED: ${result.text}`);
+          //TODO: LOGS FOR TESTING PURPOSES DELETE LATER
+          log(`${userId}: ${result.text}`);
+          // END OF LOGS
           callback(null, result.text);
           break;
         case sdk.ResultReason.NoMatch:
