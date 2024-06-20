@@ -1,34 +1,49 @@
-const { handleSkipCommand, handleLeaveCommand, handlePlayCommand, handlePauseCommand, handleUnpauseCommand, handleMuteCommand } = require("../commands");
+const {
+  handleJoinCommand,
+  handleSkipCommand,
+  handleLeaveCommand,
+  handlePlayYoutubeCommand,
+  handlePauseCommand,
+  handleUnpauseCommand,
+  handleMuteCommand,
+  handleSearchCommand,
+} = require("../commands");
 
 module.exports = (command, message) => {
-    // Clean up the message (remove caps/extra spaces/special characters)
-    command = command.toLowerCase().replace(/[^a-z0-9 ]/g, "");
+  const commandHandlers = {
+    // Handle Join Commands
+    join: handleJoinCommand,
+    // Handle Leave Commands
+    leave: handleLeaveCommand,
+    disconnect: handleLeaveCommand,
+    disappear: handleLeaveCommand,
+    vanish: handleLeaveCommand,
+    die: handleLeaveCommand,
 
-    // If the command is recognized, call the appropriate handler
-    switch (command) {
-        case "join":
-            console.log("Join command recognized");
-            handleJoinCommand(message);
-            break;
-        case "leave":
-            console.log("Leave command recognized");
-            handleLeaveCommand(message);
-            break;
-        case "play":
-            console.log("Play command recognized");
-            handlePlayCommand(message);
-            break;
-        case "pause":
-            console.log("Pause command recognized");
-            handlePauseCommand(message);
-            break;
-        case "skip":
-            console.log("Skip command recognized");
-            handleSkipCommand(message);
-            break;
-        case "mute":
-            console.log("Mute command recognized");
-            handleMuteCommand(message);
-            break;
-    }
+    // Handle Music Commands
+    skip: handleSkipCommand,
+    next: handleSkipCommand,
+    pause: handlePauseCommand,
+    unpause: handleUnpauseCommand,
+    play: handlePlayYoutubeCommand,
+    mute: handleMuteCommand,
+    stop: handleMuteCommand,
+
+    // Handle OpenAI Commands
+    search: handleSearchCommand,
+  };
+
+  // Clean up the message (remove caps/extra spaces/special characters)
+
+  command = command.toLowerCase().replace(/[^a-z0-9 ]/g, "");
+  console.log("Test " + command + ".");
+  // If the command is recognized, call the appropriate handler
+  const handler = commandHandlers[command];
+  if (handler) {
+    handler(message);
+  } else {
+    console.error(`Command ${command} unknown.`);
+  }
 };
+
+/* message.content.split(" ").slice(2).join(" "); */
