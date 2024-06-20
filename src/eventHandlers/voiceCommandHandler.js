@@ -1,18 +1,17 @@
 const {
-    handleJoinCommand,
-    handleSkipCommand,
     handleLeaveCommand,
-    handleYoutubeAudioCommand,
+    handleSkipCommand,
     handlePauseCommand,
     handleUnpauseCommand,
+    playAudioFromYouTube,
+    pauseAudio,
+    unpauseAudio,
     handleMuteCommand,
     handleSearchCommand,
 } = require("../commands");
 
 module.exports = (command, message, prompt) => {
     const commandHandlers = {
-        // Handle Join Commands
-        join: handleJoinCommand,
         // Handle Leave Commands
         leave: handleLeaveCommand,
         disconnect: handleLeaveCommand,
@@ -23,10 +22,10 @@ module.exports = (command, message, prompt) => {
         // Handle Music Commands
         skip: handleSkipCommand,
         next: handleSkipCommand,
-        pause: handlePauseCommand,
-        unpause: handleUnpauseCommand,
-        play: handleYoutubeAudioCommand,
-        played: handleYoutubeAudioCommand,
+        pause: pauseAudio,
+        unpause: unpauseAudio,
+        play: playAudioFromYouTube,
+        played: playAudioFromYouTube,
         mute: handleMuteCommand,
         stop: handleMuteCommand,
 

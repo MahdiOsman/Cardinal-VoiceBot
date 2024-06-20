@@ -38,7 +38,6 @@ module.exports = async (message) => {
                 }
 
                 const recognizedText = result.toLowerCase();
-                console.log(`Recognized text: ${recognizedText}`);
                 recognizedText.replace(",", "");
                 // Check if the recognized text starts with "cardinal"
                 if (recognizedText.startsWith("cardinal")) {
