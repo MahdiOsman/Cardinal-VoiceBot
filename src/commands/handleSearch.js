@@ -1,5 +1,5 @@
-module.exports = (message) => {
-  console.log("This is chatGpt Search!");
-  const prompt = message.content.split(" ").slice(2).join(" ");
-  
+const { getAiResponse } = require("../utils/openAiUtils");
+
+module.exports = async (message, prompt) => {
+  getAiResponse(message, prompt);
 };
