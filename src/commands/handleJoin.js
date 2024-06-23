@@ -7,50 +7,54 @@ const recognizeSpeech = require("../utils/speechUtils");
 const handleVoiceCommand = require("../eventHandlers/voiceCommandHandler");
 
 module.exports = async (message) => {
-    const { channel } = message.member.voice;
-    if (!channel) {
-        return message.reply(
-            "You need to be in a voice channel to use this command."
-        );
-    }
+  const { channel } = message.member.voice;
+  if (!channel) {
+    return message.reply(
+      "You need to be in a voice channel to use this command."
+    );
+  }
 
-    try {
-        const connection = joinVoiceChannel({
-            channelId: channel.id,
-            guildId: message.guild.id,
-            adapterCreator: message.guild.voiceAdapterCreator,
-            selfDeaf: false,
-        });
+  try {
+    const connection = joinVoiceChannel({
+      channelId: channel.id,
+      guildId: message.guild.id,
+      adapterCreator: message.guild.voiceAdapterCreator,
+      selfDeaf: false,
+    });
 
-        connection.receiver.speaking.on("start", (userId) => {
-            //console.log(`Started recording for user ${userId}`);
-            startRecording(userId, connection.receiver);
-        });
+    connection.receiver.speaking.on("start", (userId) => {
+      //console.log(`Started recording for user ${userId}`);
+      startRecording(userId, connection.receiver);
+    });
 
-        connection.receiver.speaking.on("end", (userId) => {
-            stopRecording(userId);
-            //console.log(`Stopped recording for user ${userId}`);
+    connection.receiver.speaking.on("end", (userId) => {
+      stopRecording(userId);
+      //console.log(`Stopped recording for user ${userId}`);
 
-            recognizeSpeech(userId, (err, result) => {
-                if (err) {
-                    console.error("Error recognizing speech:", err);
-                    return;
-                }
+      recognizeSpeech(userId, (err, result) => {
+        if (err) {
+          console.error("Error recognizing speech:", err);
+          return;
+        }
 
-                const recognizedText = result.toLowerCase();
-                recognizedText.replace(",", "");
-                // Check if the recognized text starts with "cardinal"
-                if (recognizedText.startsWith("cardinal")) {
-                    const command = recognizedText.split(" ")[1];
-                    const prompt = recognizedText.split(" ").slice(2).join(" ");
-                    handleVoiceCommand(command, message, prompt);
-                }
-            });
-        });
+        const recognizedText = result.toLowerCase().replace(/[^a-z0-9 ]/g, "");
+        const activationWordIndex = recognizedText
+          .split(" ")
+          .indexOf("cardinal");
+        if (activationWordIndex != -1) {
+          const command = recognizedText.split(" ")[activationWordIndex + 1];
+          const prompt = recognizedText
+            .split(" ")
+            .slice(activationWordIndex + 2)
+            .join(" ");
+          handleVoiceCommand(command, message, prompt);
+        }
+      });
+    });
 
-        await message.reply(`Joined ${channel.name}!`);
-    } catch (error) {
-        console.error(error);
-        await message.reply("There was an error joining the voice channel.");
-    }
+    await message.reply(`Joined ${channel.name}!`);
+  } catch (error) {
+    console.error(error);
+    await message.reply("There was an error joining the voice channel.");
+  }
 };
