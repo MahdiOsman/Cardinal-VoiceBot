@@ -136,21 +136,18 @@ async function volumeForAudio(message, prompt) {
   }
 
   try {
-  const player = connection.state.subscription.player;
-  const resource = player.state.resource;
+    const player = connection.state.subscription.player;
+    const resource = player.state.resource;
+    if (!resource || !resource.volume) {
+      return message.reply("There is no audio currently playing.");
+    }
+    resource.volume.setVolume(volume);
+    return message.reply(`Volume set to ${volume * 100}%`);
   } catch (error) {
     console.error(`Error getting player resource: ${error.message}`);
     return;
   }
-
-  if (!resource || !resource.volume) {
-    return message.reply("There is no audio currently playing.");
-  }
-
-  resource.volume.setVolume(volume);
-  return message.reply(`Volume set to ${volume * 100}%`);
 }
-
 
 module.exports = {
   playAudioFromYouTube,
