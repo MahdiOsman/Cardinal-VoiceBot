@@ -42,53 +42,49 @@ function recognizeSpeech(userId, callback) {
       return;
     }
 
-    // Create an audio configuration from the file buffer
-    const audioConfig = sdk.AudioConfig.fromWavFileInput(data);
-    const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
+    try {
+      const audioConfig = sdk.AudioConfig.fromWavFileInput(data);
+      const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
 
-    recognizer.recognizeOnceAsync((result) => {
-      let errorOccurred = false;
+      recognizer.recognizeOnceAsync((result) => {
+        switch (result.reason) {
+          case sdk.ResultReason.RecognizedSpeech:
+            console.log(`RECOGNIZED: ${result.text}`);
 
-      switch (result.reason) {
-        case sdk.ResultReason.RecognizedSpeech:
-          console.log(`RECOGNIZED: ${result.text}`);
+            // TODO: LOGS FOR TESTING PURPOSES DELETE LATER
+            log(`${userId}: ${result.text}`);
+            // END OF LOGS
 
-          // Log the recognized text
-          log(`${userId}: ${result.text}`);
-
-          // Call the callback with the recognized text
-          callback(null, result.text);
-          break;
-        case sdk.ResultReason.NoMatch:
-          console.log("NOMATCH: Speech could not be recognized.");
-          callback(new Error("Speech could not be recognized."), null);
-          errorOccurred = true;
-          break;
-        case sdk.ResultReason.Canceled:
-          const cancellation = sdk.CancellationDetails.fromResult(result);
-          console.log(`CANCELED: Reason=${cancellation.reason}`);
-          if (cancellation.reason === sdk.CancellationReason.Error) {
-            console.error(`CANCELED: ErrorCode=${cancellation.errorCode}`);
-            console.error(`CANCELED: ErrorDetails=${cancellation.errorDetails}`);
-          }
-          callback(new Error("Recognition canceled."), null);
-          errorOccurred = true;
-          break;
-        default:
-          console.error("Unknown recognition result reason.");
-          callback(new Error("Unknown recognition result reason."), null);
-          errorOccurred = true;
-          break;
-      }
-
-      if (!errorOccurred) {
+            callback(null, result.text);
+            break;
+          case sdk.ResultReason.NoMatch:
+            console.log("NOMATCH: Speech could not be recognized.");
+            //callback(new Error("Speech could not be recognized."), null);
+            break;
+          case sdk.ResultReason.Canceled:
+            const cancellation = sdk.CancellationDetails.fromResult(result);
+            console.log(`CANCELED: Reason=${cancellation.reason}`);
+            if (cancellation.reason === sdk.CancellationReason.Error) {
+              console.error(`CANCELED: ErrorCode=${cancellation.errorCode}`);
+              console.error(`CANCELED: ErrorDetails=${cancellation.errorDetails}`);
+            }
+            //callback(new Error("Recognition canceled."), null);
+            break;
+          default:
+            console.error("Unknown recognition result reason.");
+            //callback(new Error("Unknown recognition result reason."), null);
+            break;
+        }
         recognizer.close();
-      }
-    }, (err) => {
-      console.error("Error during speech recognition:", err);
-      callback(err, null);
-      recognizer.close();
-    });
+      }, (err) => {
+        console.error("Error during speech recognition:", err);
+        callback(err, null);
+        recognizer.close();
+      });
+    } catch (error) {
+      console.error("Error processing audio file:", error);
+      callback(error, null);
+    }
   });
 }
 
