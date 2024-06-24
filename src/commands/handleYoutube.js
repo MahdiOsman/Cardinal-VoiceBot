@@ -1,12 +1,16 @@
 /**
  * Play an audio file in the voice channel the user is in.
  */
-const { getVoiceConnection, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require("@discordjs/voice");
+const {
+  getVoiceConnection,
+  createAudioPlayer,
+  createAudioResource,
+  AudioPlayerStatus,
+} = require("@discordjs/voice");
 const ytdl = require("ytdl-core");
 const ytSearch = require("yt-search");
 
 async function playAudioFromYouTube(message, prompt) {
-  console.log(prompt);
   try {
     // Search for videos based on the prompt
     const searchResult = await ytSearch(prompt);
@@ -25,7 +29,9 @@ async function playAudioFromYouTube(message, prompt) {
     // Validate if the user is in a voice channel
     const memberVoiceChannel = message.member.voice.channel;
     if (!memberVoiceChannel) {
-      await message.reply("You need to be in a voice channel to use this command.");
+      await message.reply(
+        "You need to be in a voice channel to use this command."
+      );
       return;
     }
 
@@ -48,8 +54,12 @@ async function playAudioFromYouTube(message, prompt) {
 
     // Function to play audio stream from YouTube URL
     const playStream = (url, startTime) => {
-      const stream = ytdl(url, { filter: "audioonly", highWaterMark: 1 << 25, begin: `${startTime}s` });
-      const resource = createAudioResource(stream);
+      const stream = ytdl(url, {
+        filter: "audioonly",
+        highWaterMark: 1 << 25,
+        begin: `${startTime}s`,
+      });
+      const resource = createAudioResource(stream, { inlineVolume: true });
       const player = createAudioPlayer();
       player.play(resource);
 
@@ -97,24 +107,7 @@ async function pauseAudio(message) {
   return message.reply("Audio is already paused.");
 }
 
-// Pause audio
-async function pauseAudio(message) {
-  const connection = getVoiceConnection(message.guild.id);
-  if (!connection) {
-    return message.reply("There is no audio currently playing.");
-  }
-
-  const player = connection.state.subscription.player;
-  if (player.state.status === AudioPlayerStatus.Playing) {
-    player.pause();
-    return message.reply("Audio paused.");
-  }
-
-  return message.reply("Audio is already paused.");
-}
-
-
-// Unpause the audio 
+// Unpause the audio
 async function unpauseAudio(message) {
   const connection = getVoiceConnection(message.guild.id);
   if (!connection) {
@@ -130,8 +123,27 @@ async function unpauseAudio(message) {
   return message.reply("Audio is not paused.");
 }
 
+async function volumeForAudio(message, prompt) {
+  const connection = getVoiceConnection(message.guild.id);
+  if (!connection) {
+    return message.reply("There is no audio currently playing.");
+  }
+
+  const volume = parseFloat(prompt / 100);
+  const player = connection.state.subscription.player;
+  const resource = player.state.resource;
+
+  if (isNaN(volume) || volume < 0 || volume > 1) {
+    return message.reply("Please provide a volume level between 0 and 100.");
+  } else {
+    resource.volume.setVolume(volume);
+    return message.reply(`Volume set to ${volume * 100}%`);
+  }
+}
+
 module.exports = {
   playAudioFromYouTube,
   pauseAudio,
   unpauseAudio,
+  volumeForAudio,
 };

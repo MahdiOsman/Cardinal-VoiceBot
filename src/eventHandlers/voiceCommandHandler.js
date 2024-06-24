@@ -6,6 +6,7 @@ const {
   playAudioFromYouTube,
   pauseAudio,
   unpauseAudio,
+  volumeForAudio,
   handleMuteCommand,
   handleSearchCommand,
 } = require("../commands");
@@ -28,6 +29,7 @@ module.exports = (command, message, prompt) => {
     play: playAudioFromYouTube,
     mute: handleMuteCommand,
     stop: handleMuteCommand,
+    volume: volumeForAudio,
 
     // Handle OpenAI Commands
     search: handleSearchCommand,

@@ -1,5 +1,10 @@
 const handleLeaveCommand = require("./handleLeave");
-const { playAudioFromYouTube, pauseAudio, unpauseAudio } = require("./handleYoutube.js");
+const {
+  playAudioFromYouTube,
+  pauseAudio,
+  unpauseAudio,
+  volumeForAudio,
+} = require("./handleYoutube.js");
 const handleMuteCommand = require("./handleMute");
 const handleSkipCommand = require("./handleSkip");
 const handleSearchCommand = require("./handleSearch");
@@ -9,6 +14,7 @@ module.exports = {
   playAudioFromYouTube,
   pauseAudio,
   unpauseAudio,
+  volumeForAudio,
   handleMuteCommand,
   handleSkipCommand,
   handleSearchCommand,

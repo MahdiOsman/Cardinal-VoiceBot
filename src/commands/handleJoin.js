@@ -38,17 +38,23 @@ module.exports = async (message) => {
         }
 
         const recognizedText = result.toLowerCase().replace(/[^a-z0-9 ]/g, "");
-        const activationWordIndex = recognizedText
-          .split(" ")
-          .indexOf("cardinal");
-        if (activationWordIndex != -1) {
-          const command = recognizedText.split(" ")[activationWordIndex + 1];
-          const prompt = recognizedText
-            .split(" ")
-            .slice(activationWordIndex + 2)
-            .join(" ");
+        const words = recognizedText.split(" ");
+        const activationWordIndex = words.indexOf("cardinal");
+        const textLength = words.length;
+
+        if (
+          activationWordIndex !== -1 &&
+          activationWordIndex < textLength - 1
+        ) {
+          const commandWordIndex = activationWordIndex + 1;
+          const command = words[commandWordIndex];
+          const prompt = words.slice(commandWordIndex + 1).join(" ");
           handleVoiceCommand(command, message, prompt);
-        }
+        } /*  else {
+          console.log(
+            "Activation word not found or no command follows the activation word."
+          );
+        } */
       });
     });
 
