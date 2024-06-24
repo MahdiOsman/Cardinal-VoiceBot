@@ -125,21 +125,32 @@ async function unpauseAudio(message) {
 
 async function volumeForAudio(message, prompt) {
   const connection = getVoiceConnection(message.guild.id);
+
   if (!connection) {
-    return message.reply("There is no audio currently playing.");
+    return message.reply("There is no active voice connection in this guild.");
   }
 
   const volume = parseFloat(prompt / 100);
-  const player = connection.state.subscription.player;
-  const resource = player.state.resource;
-
   if (isNaN(volume) || volume < 0 || volume > 1) {
     return message.reply("Please provide a volume level between 0 and 100.");
-  } else {
-    resource.volume.setVolume(volume);
-    return message.reply(`Volume set to ${volume * 100}%`);
   }
+
+  try {
+  const player = connection.state.subscription.player;
+  const resource = player.state.resource;
+  } catch (error) {
+    console.error(`Error getting player resource: ${error.message}`);
+    return;
+  }
+
+  if (!resource || !resource.volume) {
+    return message.reply("There is no audio currently playing.");
+  }
+
+  resource.volume.setVolume(volume);
+  return message.reply(`Volume set to ${volume * 100}%`);
 }
+
 
 module.exports = {
   playAudioFromYouTube,

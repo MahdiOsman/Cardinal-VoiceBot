@@ -1,12 +1,8 @@
 const fs = require("fs");
-const sdk = require("microsoft-cognitiveservices-speech-sdk");
-const { AZURE_SPEECH_KEY, AZURE_REGION } = require("../../config/config.json");
+const { OpenAI } = require("openai");
+const { OPENAI_API_KEY } = require("../../config/config.json");
 
-const speechConfig = sdk.SpeechConfig.fromSubscription(
-  AZURE_SPEECH_KEY,
-  AZURE_REGION
-);
-speechConfig.speechRecognitionLanguage = "en-US";
+const openai = new OpenAI({apiKey: OPENAI_API_KEY});
 
 function log(text) {
   const folder = "./logs";
@@ -33,9 +29,10 @@ function log(text) {
   });
 }
 
-function recognizeSpeech(userId, callback) {
+async function recognizeSpeech(userId, callback) {
   const filename = `./recordings/${userId}.wav`;
-  fs.readFile(filename, (err, data) => {
+
+  fs.readFile(filename, async (err, data) => {
     if (err) {
       console.error("Error reading file:", err);
       callback(err, null);
@@ -43,46 +40,23 @@ function recognizeSpeech(userId, callback) {
     }
 
     try {
-      const audioConfig = sdk.AudioConfig.fromWavFileInput(data);
-      const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
+      const audioFilePath = `./recordings/${userId}.wav`;
+      fs.writeFileSync(audioFilePath, data);
 
-      recognizer.recognizeOnceAsync((result) => {
-        switch (result.reason) {
-          case sdk.ResultReason.RecognizedSpeech:
-            console.log(`RECOGNIZED: ${result.text}`);
-
-            // TODO: LOGS FOR TESTING PURPOSES DELETE LATER
-            log(`${userId}: ${result.text}`);
-            // END OF LOGS
-
-            callback(null, result.text);
-            break;
-          case sdk.ResultReason.NoMatch:
-            console.log("NOMATCH: Speech could not be recognized.");
-            //callback(new Error("Speech could not be recognized."), null);
-            break;
-          case sdk.ResultReason.Canceled:
-            const cancellation = sdk.CancellationDetails.fromResult(result);
-            console.log(`CANCELED: Reason=${cancellation.reason}`);
-            if (cancellation.reason === sdk.CancellationReason.Error) {
-              console.error(`CANCELED: ErrorCode=${cancellation.errorCode}`);
-              console.error(`CANCELED: ErrorDetails=${cancellation.errorDetails}`);
-            }
-            //callback(new Error("Recognition canceled."), null);
-            break;
-          default:
-            console.error("Unknown recognition result reason.");
-            //callback(new Error("Unknown recognition result reason."), null);
-            break;
-        }
-        recognizer.close();
-      }, (err) => {
-        console.error("Error during speech recognition:", err);
-        callback(err, null);
-        recognizer.close();
+      const transcription = await openai.audio.transcriptions.create({
+        file: fs.createReadStream(audioFilePath),
+        model: "whisper-1",
       });
+
+      console.log(`RECOGNIZED: ${transcription.text}`);
+
+      // TODO: LOGS FOR TESTING PURPOSES DELETE LATER
+      log(`${userId}: ${transcription.text}`);
+      // END OF LOGS
+
+      callback(null, transcription.text);
     } catch (error) {
-      console.error("Error processing audio file:", error);
+      console.error("Error during speech recognition:", error);
       callback(error, null);
     }
   });
