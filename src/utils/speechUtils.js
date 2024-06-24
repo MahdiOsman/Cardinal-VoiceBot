@@ -50,9 +50,11 @@ function recognizeSpeech(userId, callback) {
       switch (result.reason) {
         case sdk.ResultReason.RecognizedSpeech:
           console.log(`RECOGNIZED: ${result.text}`);
+          
           //TODO: LOGS FOR TESTING PURPOSES DELETE LATER
           log(`${userId}: ${result.text}`);
           // END OF LOGS
+
           callback(null, result.text);
           break;
         case sdk.ResultReason.NoMatch:

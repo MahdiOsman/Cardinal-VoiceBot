@@ -32,10 +32,6 @@ module.exports = (command, message, prompt) => {
     // Handle OpenAI Commands
     search: handleSearchCommand,
   };
-
-  // Clean up the message (remove caps/extra spaces/special characters)
-
-  command = command.toLowerCase().replace(/[^a-z0-9 ]/g, "");
   console.log(prompt);
   // If the command is recognized, call the appropriate handler
   const handler = commandHandlers[command];

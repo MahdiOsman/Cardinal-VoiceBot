@@ -143,4 +143,4 @@ testing/
 logs/
 
 # node
-./package-lock.json
+package-lock.json
