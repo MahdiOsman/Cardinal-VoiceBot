@@ -1,7 +1,7 @@
 const { OPENAI_API_KEY } = require("../../config/config.json");
 const { OpenAI } = require("openai");
-const path = require("path");
-const fs = require("fs");
+/* const path = require("path");
+const fs = require("fs"); */
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
@@ -13,21 +13,21 @@ async function getAiResponse(message, prompt) {
     });
 
     const response = data.choices[0].message.content;
-    console.log(response);
-    textToSpeech(message, response);
+    /*  console.log(response); */
+    replyAiResponse(message, response);
   } catch (error) {
     console.error(`Error getting response: ${error.message}`);
   }
 }
 
-async function textToSpeech(message, prompt) {
+/* async function textToSpeech(message, response) {
   try {
     const audioFile = "openai-ai-response";
     const responseAudioFile = path.resolve(`./recordings/${audioFile}.mp3`);
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
       voice: "onyx",
-      input: prompt,
+      input: response,
     });
 
     const buffer = Buffer.from(await mp3.arrayBuffer());
@@ -38,8 +38,16 @@ async function textToSpeech(message, prompt) {
       "There was an error trying to convert text to speech data."
     );
   }
+} */
+
+async function replyAiResponse(message, response) {
+  try {
+    message.reply(`**### Result:** ` + `${response}`);
+  } catch (error) {
+    console.error(`Error getting response: ${error.message}`);
+  }
 }
 
 module.exports = {
-  getAiResponse
+  getAiResponse,
 };

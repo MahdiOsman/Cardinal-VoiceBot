@@ -33,15 +33,18 @@ module.exports = (command, message, prompt) => {
 
     // Handle OpenAI Commands
     search: handleSearchCommand,
+    browse: handleSearchCommand,
+    check: handleSearchCommand,
+    scan: handleSearchCommand,
   };
   console.log(prompt);
   // If the command is recognized, call the appropriate handler
   const handler = commandHandlers[command];
   if (handler) {
     handler(message, prompt);
-  } else {
+  } /* else {
     console.error(`Command ${command} unknown.`);
-  }
+  } */
 };
 
 /* message.content.split(" ").slice(2).join(" "); */

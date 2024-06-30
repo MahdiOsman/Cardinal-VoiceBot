@@ -83,6 +83,7 @@ async function playAudioFromYouTube(message, prompt) {
       }, 1000);
     };
 
+    await message.reply(`**### Now Playing:**` + url);
     // Start playing the stream
     playStream(url, startTime);
   } catch (error) {
@@ -93,34 +94,43 @@ async function playAudioFromYouTube(message, prompt) {
 
 // Pause audio
 async function pauseAudio(message) {
-  const connection = getVoiceConnection(message.guild.id);
-  if (!connection) {
-    return message.reply("There is no audio currently playing.");
-  }
+  try {
+    const connection = getVoiceConnection(message.guild.id);
+    if (!connection) {
+      return message.reply("There is no audio currently playing.");
+    }
 
-  const player = connection.state.subscription.player;
-  if (player.state.status === AudioPlayerStatus.Playing) {
-    player.pause();
-    return message.reply("Audio paused.");
-  }
+    const player = connection.state.subscription.player;
+    if (player.state.status === AudioPlayerStatus.Playing) {
+      player.pause();
+      return message.reply("Audio paused.");
+    }
 
-  return message.reply("Audio is already paused.");
+    return message.reply("Audio is already paused.");
+  } catch (error) {
+    console.error(`Error getting player resource: ${error.message}`);
+    return;
+  }
 }
 
 // Unpause the audio
 async function unpauseAudio(message) {
-  const connection = getVoiceConnection(message.guild.id);
-  if (!connection) {
-    return message.reply("There is no audio currently playing.");
-  }
+  try {
+    const connection = getVoiceConnection(message.guild.id);
+    if (!connection) {
+      return message.reply("There is no audio currently playing.");
+    }
 
-  const player = connection.state.subscription.player;
-  if (player.state.status === AudioPlayerStatus.Paused) {
-    player.unpause();
-    return message.reply("Audio unpaused.");
+    const player = connection.state.subscription.player;
+    if (player.state.status === AudioPlayerStatus.Paused) {
+      player.unpause();
+      return message.reply("Audio unpaused.");
+    }
+    return message.reply("Audio is not paused.");
+  } catch (error) {
+    console.error(`Error getting player resource: ${error.message}`);
+    return;
   }
-
-  return message.reply("Audio is not paused.");
 }
 
 async function volumeForAudio(message, prompt) {
