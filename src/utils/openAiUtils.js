@@ -13,8 +13,7 @@ async function getAiResponse(message, prompt) {
     });
 
     const response = data.choices[0].message.content;
-    /*  console.log(response); */
-    replyAiResponse(message, response);
+    message.reply(response);
   } catch (error) {
     console.error(`Error getting response: ${error.message}`);
   }
@@ -39,14 +38,6 @@ async function getAiResponse(message, prompt) {
     );
   }
 } */
-
-async function replyAiResponse(message, response) {
-  try {
-    message.reply(`**### Result:** ` + `${response}`);
-  } catch (error) {
-    console.error(`Error getting response: ${error.message}`);
-  }
-}
 
 module.exports = {
   getAiResponse,
