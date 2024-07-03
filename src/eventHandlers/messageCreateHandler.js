@@ -1,4 +1,4 @@
-const handleJoin = require("../commands/handleJoin");
+const handleVoice = require("../commands/handleVoice");
 const handleLeave = require("../commands/handleLeave");
 const handleSkip = require("../commands/handleSkip");
 const handleMute = require("../commands/handleMute");
@@ -12,6 +12,6 @@ module.exports = async (message) => {
   const content = message.content.toLowerCase();
 
   if (content === prefix + "join") {
-    await handleJoin(message);
+    await handleVoice(message);
   }
 };

@@ -1,8 +1,6 @@
 const {
   handleLeaveCommand,
   handleSkipCommand,
-  handlePauseCommand,
-  handleUnpauseCommand,
   playAudioFromYouTube,
   pauseAudio,
   unpauseAudio,

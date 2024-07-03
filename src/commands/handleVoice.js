@@ -7,6 +7,7 @@ const recognizeSpeech = require("../utils/speechUtils");
 const handleVoiceCommand = require("../eventHandlers/voiceCommandHandler");
 const { OPENAI_API_KEY } = require("../../config/config.json");
 const { OpenAI } = require("openai");
+const openai = new OpenAI({apiKey: OPENAI_API_KEY});
 
 module.exports = async (message) => {
   const { channel } = message.member.voice;
@@ -44,9 +45,10 @@ module.exports = async (message) => {
         const commandWordIndex = activationWordIndex + 1;
         const textLength = words.length;
 
-        const getCommand = await handleGetCommand(recognizedText);
-        if (words[commandWordIndex] != getCommand) {
-          words.splice(commandWordIndex, 0, getCommand);
+        const commandWord = await getCommandFromContext(recognizedText);
+        console.log(`Command: ${commandWord}`);
+        if (words[commandWordIndex] != commandWord) {
+          words.splice(commandWordIndex, 0, commandWord);
         }
         if (
           activationWordIndex !== -1 &&
@@ -70,9 +72,8 @@ module.exports = async (message) => {
   }
 };
 
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-async function handleGetCommand(prompt) {
+async function getCommandFromContext(prompt) {
   /*  Prompt: `Using this message: "${prompt}" determine the appropriate command that is required and then return only the command value from the list: "leave,skip,pause,unpause,play,mute,stop,volume,search,none,"`;
    */ try {
     const data = await openai.chat.completions.create({
